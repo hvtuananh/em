@@ -77,7 +77,7 @@ public class EmTwentyNewsgroups {
         Reporter reporter = Reporters.stream(System.out,"ISO-8859-1").setLevel(LogLevel.DEBUG);
 
         Random random = new Random(RANDOM_SEED);
-        for (int numSupervisedItems : new Integer[] {  1, 2, 4, 8, 16, 32, 64, 128, 256, 512 }) {
+        for (int numSupervisedItems : new Integer[] {  0 }) {
             System.out.println("SUPERVISED DOCS/CAT=" + numSupervisedItems);
             corpus.setMaxSupervisedInstancesPerCategory(numSupervisedItems);
 
