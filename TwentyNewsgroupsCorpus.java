@@ -27,13 +27,16 @@ import java.util.regex.Pattern;
 public class TwentyNewsgroupsCorpus 
     extends Corpus<ObjectHandler<Classified<CharSequence>>> {
     
+    final Map<String,String[]> mGoldCatToTexts;
     final Map<String,String[]> mTrainingCatToTexts;
     final Map<String,String[]> mTestCatToTexts;
     int mMaxSupervisedInstancesPerCategory = 1;
 
     public TwentyNewsgroupsCorpus(File path) throws IOException {
-        File trainDir = new File(path,"20news-bydate-train");
-        File testDir = new File(path,"20news-bydate-test");
+        File goldDir = new File(path,"gold");
+        File trainDir = new File(path,"train");
+        File testDir = new File(path,"test");
+        mGoldCatToTexts = read(goldDir);
         mTrainingCatToTexts = read(trainDir);
         mTestCatToTexts = read(testDir);
     }
@@ -45,6 +48,8 @@ public class TwentyNewsgroupsCorpus
     public void permuteInstances(Random random) {
         for (String[] xs : mTrainingCatToTexts.values())
             Arrays.permute(xs,random);
+        for (String[] xs : mGoldCatToTexts.values())
+            Arrays.permute(xs,random);
     }
 
     public void setMaxSupervisedInstancesPerCategory(int max) {
@@ -54,6 +59,10 @@ public class TwentyNewsgroupsCorpus
 
     public void visitTrain(ObjectHandler<Classified<CharSequence>> handler) {
         visit(mTrainingCatToTexts,handler,mMaxSupervisedInstancesPerCategory);
+    }
+    
+    public void visitGold(ObjectHandler<Classified<CharSequence>> handler) {
+        visit(mGoldCatToTexts,handler,Integer.MAX_VALUE);
     }
 
     public void visitTest(ObjectHandler<Classified<CharSequence>> handler) {
@@ -78,20 +87,25 @@ public class TwentyNewsgroupsCorpus
     public String toString() {
         StringBuilder sb = new StringBuilder();
         int totalTrain = 0;
+        int totalGold = 0;
         int totalTest = 0;
         for (String cat : new TreeSet<String>(mTrainingCatToTexts.keySet())) {
             sb.append(cat); 
+            int gold = mGoldCatToTexts.get(cat).length;
             int train = mTrainingCatToTexts.get(cat).length;
             int test = mTestCatToTexts.get(cat).length;
+            totalGold += gold;
             totalTrain += train;
             totalTest += test;
+            sb.append(" #gold=" + gold);
             sb.append(" #train=" + train);
             sb.append(" #test=" + test);
             sb.append('\n');
         }
-        sb.append("TOTALS: #train=" + totalTrain
+        sb.append("TOTALS: #gold=" + totalGold
+                  + " #train=" + totalTrain
                   + " #test=" + totalTest
-                  + " #combined=" + (totalTrain + totalTest));
+                  + " #combined=" + (totalGold + totalTrain + totalTest));
         sb.append('\n');
         return sb.toString();
     }
@@ -148,7 +162,8 @@ public class TwentyNewsgroupsCorpus
     }
 
     private static boolean isHeader(String line) {
-        return HEADER_PATTERN.matcher(line).find();
+        return false; //Our corpus is text only so no need to check this
+        //return HEADER_PATTERN.matcher(line).find();
     }
 
     private static void visit(Map<String,String[]> catToItems,
