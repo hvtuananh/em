@@ -7,6 +7,7 @@ import com.aliasi.classify.JointClassifier;
 import com.aliasi.classify.JointClassification;
 import com.aliasi.classify.JointClassifierEvaluator;
 import com.aliasi.classify.TradNaiveBayesClassifier;
+import com.aliasi.classify.ConfusionMatrix;
 
 import com.aliasi.io.LogLevel;
 import com.aliasi.io.Reporter;
@@ -28,6 +29,7 @@ import com.aliasi.util.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.*;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -113,7 +115,9 @@ public class EmTwentyNewsgroups {
                                                        MAX_EPOCHS,
                                                        MIN_IMPROVEMENT,
                                                        reporter);
+                System.out.println("=====INITIAL CLASSIFIER=====");
                 accs[trial] = eval(initialClassifier,corpus);
+                System.out.println("=====EM CLASSIFIER=====");
                 accsEm[trial] = eval(emClassifier,corpus);
                 System.out.printf("ACC=%5.3f   EM ACC=%5.3f\n\n",
                                   accs[trial], accsEm[trial]);
@@ -148,6 +152,19 @@ public class EmTwentyNewsgroups {
                                                          categories,
                                                          storeInputs);
         corpus.visitTest(evaluator);
+        
+        //Get content of ConfusionMatrix
+        String[] evalCats = new String[] {"104"};
+        ConfusionMatrix confuse = evaluator.confusionMatrix();
+        String[] cats = confuse.categories();
+        for (String cat: evalCats){
+            int index = Arrays.asList(cats).indexOf(cat);
+            int realCount = corpus.getTestCount(cat);
+            int emCount = confuse.count(index, index);
+            float score = (float)emCount / realCount;
+            System.out.printf("Evaluation score for topic [%s]: %d    %d    %5.3f\n", cat, emCount, realCount, score);
+        }
+        
         return evaluator.confusionMatrix().totalAccuracy();
     }
 

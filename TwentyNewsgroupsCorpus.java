@@ -115,6 +115,16 @@ public class TwentyNewsgroupsCorpus
         sb.append('\n');
         return sb.toString();
     }
+    
+    public int getTestCount(String cat){
+        int test = 0;
+        try {
+            test = mTestCatToTexts.get(cat).length;
+        } catch (Exception e) {
+            //Nothing
+        }
+        return test;
+    }
 
     private static Map<String,String[]> read(File dir) 
         throws IOException {
