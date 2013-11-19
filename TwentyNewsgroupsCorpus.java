@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.HashSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,7 +94,12 @@ public class TwentyNewsgroupsCorpus
             sb.append(cat); 
             int gold = mGoldCatToTexts.get(cat).length;
             int train = mTrainingCatToTexts.get(cat).length;
-            int test = mTestCatToTexts.get(cat).length;
+            int test = 0;
+            try {
+                test = mTestCatToTexts.get(cat).length;
+            } catch (Exception e) {
+                //Nothing
+            }
             totalGold += gold;
             totalTrain += train;
             totalTest += test;
@@ -110,9 +116,6 @@ public class TwentyNewsgroupsCorpus
         return sb.toString();
     }
 
-    static final String HEADER_REGEX = "^\\w+: ";
-    static final Pattern HEADER_PATTERN = Pattern.compile(HEADER_REGEX);
-
     private static Map<String,String[]> read(File dir) 
         throws IOException {
         ObjectToSet<String,String> catToTexts 
@@ -122,9 +125,8 @@ public class TwentyNewsgroupsCorpus
             for (File file : catDir.listFiles()) {
                 String[] lines 
                     = FileLineReader.readLineArray(file,"ISO-8859-1");
-                String text = extractText(lines);
-                if (text != null)
-                    catToTexts.addMember(cat,text);
+                Set<String> texts = new HashSet<String>(java.util.Arrays.asList(lines)); 
+                catToTexts.addMembers(cat,texts);
             }
         }
         Map<String,String[]> map = new HashMap<String,String[]>();
@@ -132,38 +134,6 @@ public class TwentyNewsgroupsCorpus
             map.put(entry.getKey(),
                     entry.getValue().toArray(new String[0]));
         return map;
-    }
-
-    private static String extractText(String[] lines) {
-
-        // skip header
-        int i = 0;
-        while ((i < lines.length) && isHeader(lines[i]))
-            ++i;
-        
-        // accumulate rest
-        StringBuilder sb = new StringBuilder();
-        for ( ; i < lines.length; ++i)
-            sb.append(lines[i] + " ");
-        String text = sb.toString().trim();
-
-        return atLeastThreeTokens(text) ? text : null;
-    }
-
-    private static boolean atLeastThreeTokens(String text) {
-        char[] cs = text.toCharArray();
-        Tokenizer tokenizer 
-            = EmTwentyNewsgroups
-            .TOKENIZER_FACTORY
-            .tokenizer(cs,0,cs.length);
-        if (tokenizer.nextToken() == null) return false;
-        if (tokenizer.nextToken() == null) return false;
-        return true;
-    }
-
-    private static boolean isHeader(String line) {
-        return false; //Our corpus is text only so no need to check this
-        //return HEADER_PATTERN.matcher(line).find();
     }
 
     private static void visit(Map<String,String[]> catToItems,
