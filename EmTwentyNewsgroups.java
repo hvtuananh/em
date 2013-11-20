@@ -41,7 +41,7 @@ public class EmTwentyNewsgroups {
     static final long RANDOM_SEED = 45L;
 
     static final int NUM_REPLICATIONS = 1;
-    static final int MAX_EPOCHS = 20;
+    static final int MAX_EPOCHS = 50;
 
     static final double MIN_IMPROVEMENT = 0.0001;
 
