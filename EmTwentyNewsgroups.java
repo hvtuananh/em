@@ -154,7 +154,7 @@ public class EmTwentyNewsgroups {
         corpus.visitTest(evaluator);
         
         //Get content of ConfusionMatrix
-        String[] evalCats = new String[] {"104"};
+        String[] evalCats = new String[] {"004","139","013","014","016","020","149","025","029","034","040","046","047","050","052","055","062","011","070","073","079","083","089","092","104","111"};
         ConfusionMatrix confuse = evaluator.confusionMatrix();
         String[] cats = confuse.categories();
         for (String cat: evalCats){
